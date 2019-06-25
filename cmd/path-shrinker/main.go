@@ -4,9 +4,9 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"path/filepath"
+	"strings"
 )
-
+// https://github.com/robbyrussell/oh-my-zsh/tree/master/plugins/shrink-path
 func main() {
 	flag.Parse()
 	path, err := run(flag.Args())
@@ -30,7 +30,8 @@ func run(args []string) (string, error) {
 		path = p
 	}
 
-	dirs := filepath.SplitList(path)
-	fmt.Printf("dirs = %v\n", dirs)
+	dirs := strings.Split(path, string(os.PathSeparator))
+	fmt.Printf("dirs = %+v\n", dirs)
+
 	return path, nil
 }
