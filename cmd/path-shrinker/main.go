@@ -46,5 +46,20 @@ func run(args []string) (string, error) {
 	dirs := strings.Split(path, string(os.PathSeparator))
 	fmt.Printf("dirs = %+v\n", dirs)
 
+	if err := executeTransform(transformers, dirs); err != nil {
+		return "", err
+	}
 	return path, nil
+}
+
+func executeTransform(transformers []shrinker.Transformer, input []string) error {
+	result := input
+	for _, t := range transformers {
+		output, err := t.Transform(result)
+		if err != nil {
+			return err
+		}
+		result = output
+	}
+	return nil
 }
