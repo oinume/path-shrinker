@@ -5,13 +5,22 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	path_shrinker "github.com/oinume/path-shrinker"
+	shrinker "github.com/oinume/path-shrinker"
 )
+
 // https://github.com/robbyrussell/oh-my-zsh/tree/master/plugins/shrink-path
+
+var (
+	tilde = flag.Bool("tilde", false, " Substitute ~ for the home directory.")
+)
+
 func main() {
 	flag.Parse()
 	path, err := run(flag.Args())
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "err=%v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "err=%v\n", err)
 		os.Exit(1)
 	}
 	fmt.Printf("%v\n", path)
@@ -30,6 +39,10 @@ func run(args []string) (string, error) {
 		path = p
 	}
 
+	transformers := make([]shrinker.Transformer, 0, 10)
+	if *tilde {
+		transformers = append(transformers, &path_shrinker.TildeTransformer{})
+	}
 	dirs := strings.Split(path, string(os.PathSeparator))
 	fmt.Printf("dirs = %+v\n", dirs)
 
