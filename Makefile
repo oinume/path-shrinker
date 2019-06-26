@@ -34,7 +34,7 @@ lint: fmt vet staticcheck errcheck
 .PHONY: fmt
 fmt:
 	tools/bin/goimports -l . | grep -E '.'; test $$? -eq 1
-	#tools/bin/gofmt -w $(LINT_PACKAGES) | grep -E '.'; test $$? -eq 1
+	gofmt -l . | grep -E '.'; test $$? -eq 1
 
 .PHONY: vet
 vet:
