@@ -6,7 +6,6 @@ import (
 	"os"
 	"strings"
 
-	path_shrinker "github.com/oinume/path-shrinker"
 	shrinker "github.com/oinume/path-shrinker"
 )
 
@@ -16,7 +15,7 @@ $ pwd
 /Users/kazuhiro/go/src/github.com/oinume/path-shrinker
 $ shrink_path
 /Use/k/g/s/gi/oi/pa
- */
+*/
 var (
 	tilde = flag.Bool("tilde", false, " Substitute ~ for the home directory.")
 )
@@ -53,7 +52,7 @@ func run(args []string) (string, error) {
 	dirs := strings.Split(path, string(os.PathSeparator))
 	//fmt.Printf("dirs = %+v\n", dirs)
 
-	shrink, err := executeTransform(transformers, dirs);
+	shrink, err := executeTransform(transformers, dirs)
 	if err != nil {
 		return "", err
 	}
