@@ -11,7 +11,12 @@ import (
 )
 
 // https://github.com/robbyrussell/oh-my-zsh/tree/master/plugins/shrink-path
-
+/*
+$ pwd
+/Users/kazuhiro/go/src/github.com/oinume/path-shrinker
+$ shrink_path
+/Use/k/g/s/gi/oi/pa
+ */
 var (
 	tilde = flag.Bool("tilde", false, " Substitute ~ for the home directory.")
 )
@@ -42,26 +47,27 @@ func run(args []string) (string, error) {
 	transformers := make([]shrinker.Transformer, 0, 10)
 	if *tilde {
 		transformers = append(transformers, &path_shrinker.TildeTransformer{
-			HomeDir: os.Getenv("HOME"),
+			HomeDir: os.Getenv("HOME"), // TODO: go-homedir
 		})
 	}
 	dirs := strings.Split(path, string(os.PathSeparator))
-	fmt.Printf("dirs = %+v\n", dirs)
+	//fmt.Printf("dirs = %+v\n", dirs)
 
-	if err := executeTransform(transformers, dirs); err != nil {
+	shrink, err := executeTransform(transformers, dirs);
+	if err != nil {
 		return "", err
 	}
-	return path, nil
+	return shrink, nil
 }
 
-func executeTransform(transformers []shrinker.Transformer, input []string) error {
+func executeTransform(transformers []shrinker.Transformer, input []string) (string, error) {
 	result := input
 	for _, t := range transformers {
 		output, err := t.Transform(result)
 		if err != nil {
-			return err
+			return "", err
 		}
 		result = output
 	}
-	return nil
+	return strings.Join(result, string(os.PathSeparator)), nil
 }
