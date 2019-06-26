@@ -45,7 +45,7 @@ func run(args []string) (string, error) {
 
 	transformers := make([]shrinker.Transformer, 0, 10)
 	if *tilde {
-		transformers = append(transformers, &path_shrinker.TildeTransformer{
+		transformers = append(transformers, &shrinker.TildeTransformer{
 			HomeDir: os.Getenv("HOME"), // TODO: go-homedir
 		})
 	}
