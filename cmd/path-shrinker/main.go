@@ -65,7 +65,7 @@ func run(args []string) (string, error) {
 	return shrink, nil
 }
 
-func createTransformers(dirs []string) []shrinker.Transformer {
+func createTransformers(dirs []string /* TODO: config *Config */) []shrinker.Transformer {
 	// -tilde, -short, -last are enabled
 	// -> Process order: tilde, short, last
 	// -amb, -last are enabled
