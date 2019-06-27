@@ -17,9 +17,10 @@ $ shrink_path
 /Use/k/g/s/gi/oi/pa
 */
 var (
+	fish         = flag.Bool("fish", false, "Enable -short -tilde -last")
+	last         = flag.Bool("last", false, "Print the last directory's full name.")
 	short        = flag.Bool("short", false, "Truncate directory names to the first character. Without -short, names are truncated without making them ambiguous.")
 	tilde        = flag.Bool("tilde", false, "Substitute ~ for the home directory.")
-	last         = flag.Bool("last", false, "Print the last directory's full name.")
 	printVersion = flag.Bool("version", false, "Print current version.")
 )
 
@@ -82,7 +83,7 @@ func createTransformers(dirs []string, config *shrinker.Config) []shrinker.Trans
 
 	switch config.Mode {
 	case shrinker.ModeAmbiguous:
-		transformers = append(transformers, &shrinker.ShortenTransformer{}) // TODO: ambiguous
+		transformers = append(transformers, &shrinker.AmbiguousTransformer{})
 	case shrinker.ModeShort:
 		transformers = append(transformers, &shrinker.ShortenTransformer{})
 	default:
@@ -133,6 +134,12 @@ func getVersion(version, commit, date, builtBy string) string {
 }
 
 func createConfig() *shrinker.Config {
+	if *fish {
+		*tilde = true
+		*last = true
+		*short = true
+	}
+
 	c := &shrinker.Config{}
 	if *tilde {
 		c.ReplaceTilde = true

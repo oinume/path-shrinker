@@ -41,6 +41,15 @@ func TestRun(t *testing.T) {
 			},
 			want: "~/g/src",
 		},
+		"tilde ambiguous": {
+			path: "/home/oinume/go/src/github.com",
+			config: &shrinker.Config{
+				Mode:         shrinker.ModeAmbiguous,
+				ReplaceTilde: true,
+				PreserveLast: false,
+			},
+			want: "~/g/s/gi",
+		},
 	}
 
 	for name, test := range tests {
