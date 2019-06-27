@@ -13,11 +13,11 @@ func TestRun(t *testing.T) {
 		want   string
 	}{
 		"simple": {
-			path: "/hoge",
+			path: "/home/oinume/go",
 			config: &shrinker.Config{
 				Mode: shrinker.ModeShort,
 			},
-			want: "/h",
+			want: "/h/o/g",
 		},
 	}
 
