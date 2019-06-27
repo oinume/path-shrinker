@@ -60,7 +60,7 @@ func run(args []string, config *shrinker.Config) (string, error) {
 
 	dirs := strings.Split(path, string(os.PathSeparator))
 	transformers := createTransformers(dirs, config)
-	shrink, err := executeTransform(transformers, dirs)
+	shrink, err := executeTransform(transformers, dirs, config)
 	if err != nil {
 		return "", err
 	}
@@ -97,7 +97,7 @@ func createTransformers(dirs []string, config *shrinker.Config) []shrinker.Trans
 	return transformers
 }
 
-func executeTransform(transformers []shrinker.Transformer, input []string) (string, error) {
+func executeTransform(transformers []shrinker.Transformer, input []string, config *shrinker.Config) (string, error) {
 	result := input
 	for _, t := range transformers {
 		if len(result) == 0 {
@@ -111,9 +111,12 @@ func executeTransform(transformers []shrinker.Transformer, input []string) (stri
 	}
 	const sep = string(os.PathSeparator)
 	path := strings.Join(result, sep)
-	if !strings.HasPrefix(path, "~") { // TODO: config
+	if !config.ReplaceTilde {
 		path = sep + path
 	}
+	//if !strings.HasPrefix(path, "~") { // TODO: config
+	//	path = sep + path
+	//}
 	return path, nil
 }
 
