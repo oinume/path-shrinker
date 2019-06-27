@@ -33,6 +33,25 @@ func (tt *ReplaceTildeTransformer) Transform(input []string) ([]string, error) {
 	return strings.Split(path, string(os.PathSeparator)), nil
 }
 
+type AmbiguousTransformer struct{}
+
+func (at *AmbiguousTransformer) Transform(input []string) ([]string, error) {
+	length := len(input)
+	result := make([]string, 0, length)
+	for i, v := range input {
+		runes := []rune(v)
+		if len(runes) == 0 {
+			continue
+		}
+		if i == length-1 && len(runes) > 1 {
+			result = append(result, string(runes[0])+string(runes[1]))
+		} else {
+			result = append(result, string(runes[0]))
+		}
+	}
+	return result, nil
+}
+
 type ShortenTransformer struct{}
 
 func (st *ShortenTransformer) Transform(input []string) ([]string, error) {
