@@ -60,12 +60,12 @@ func createTransformers(dirs []string) []shrinker.Transformer {
 	// -last just override last element with original value
 	transformers := make([]shrinker.Transformer, 0, 4)
 	if *tilde {
-		transformers = append(transformers, &shrinker.TildeTransformer{
+		transformers = append(transformers, &shrinker.ReplaceTildeTransformer{
 			HomeDir: os.Getenv("HOME"), // TODO: go-homedir
 		})
 	}
 	if *short {
-		transformers = append(transformers, &shrinker.ShortTransformer{})
+		transformers = append(transformers, &shrinker.ShortenTransformer{})
 	}
 	if *last {
 		transformers = append(transformers, &shrinker.PreserveLastTransformer{

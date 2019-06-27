@@ -15,23 +15,27 @@ type Transformer interface {
 	Transform(input []string) ([]string, error)
 }
 
-type TildeTransformer struct {
+type ReplaceTildeTransformer struct {
 	HomeDir string
 }
 
-func (tt *TildeTransformer) Transform(input []string) ([]string, error) {
+func (tt *ReplaceTildeTransformer) Transform(input []string) ([]string, error) {
 	path := strings.Join(input, string(os.PathSeparator))
 	path = strings.Replace(path, tt.HomeDir, "~", -1)
 	return strings.Split(path, string(os.PathSeparator)), nil
 }
 
-type ShortTransformer struct{}
+type ShortenTransformer struct{}
 
-func (st *ShortTransformer) Transform(input []string) ([]string, error) {
+func (st *ShortenTransformer) Transform(input []string) ([]string, error) {
 	length := len(input)
 	result := make([]string, 0, length)
 	for _, v := range input {
-		result = append(result, string([]rune(v)[0]))
+		runes := []rune(v)
+		if len(runes) == 0 {
+			continue
+		}
+		result = append(result, string(runes[0]))
 	}
 	return result, nil
 }

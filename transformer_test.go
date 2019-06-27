@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestTildeTransformer_Transform(t *testing.T) {
+func TestReplaceTildeTransformer_Transform(t *testing.T) {
 	tests := map[string]struct {
 		homeDir string
 		input   []string
@@ -30,10 +30,39 @@ func TestTildeTransformer_Transform(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			tt := &TildeTransformer{
+			tt := &ReplaceTildeTransformer{
 				HomeDir: test.homeDir,
 			}
 			got, err := tt.Transform(test.input)
+			if test.wantErr == nil {
+				if !reflect.DeepEqual(got, test.want) {
+					t.Errorf("got=%+v but want=%+v", got, test.want)
+				}
+			} else {
+				if !reflect.DeepEqual(err, test.wantErr) {
+					t.Fatal()
+				}
+			}
+		})
+	}
+}
+
+func TestShortenTransformer_Transform(t *testing.T) {
+	tests := map[string]struct {
+		input   []string
+		want    []string
+		wantErr error
+	}{
+		"normal": {
+			input:   strings.Split("/Users/oinume/go/src/github.com", string(os.PathSeparator)),
+			want:    []string{"U", "o", "g", "s", "g"},
+			wantErr: nil,
+		},
+	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			st := &ShortenTransformer{}
+			got, err := st.Transform(test.input)
 			if test.wantErr == nil {
 				if !reflect.DeepEqual(got, test.want) {
 					t.Errorf("got=%+v but want=%+v", got, test.want)
