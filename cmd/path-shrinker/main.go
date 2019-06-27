@@ -17,13 +17,25 @@ $ shrink_path
 /Use/k/g/s/gi/oi/pa
 */
 var (
-	short = flag.Bool("short", false, "Truncate directory names to the first character. Without -short, names are truncated without making them ambiguous.")
-	tilde = flag.Bool("tilde", false, "Substitute ~ for the home directory.")
-	last  = flag.Bool("last", false, "Print the last directory's full name.")
+	short        = flag.Bool("short", false, "Truncate directory names to the first character. Without -short, names are truncated without making them ambiguous.")
+	tilde        = flag.Bool("tilde", false, "Substitute ~ for the home directory.")
+	last         = flag.Bool("last", false, "Print the last directory's full name.")
+	printVersion = flag.Bool("version", false, "Print current version.")
+)
+
+var (
+	version = "dev"
+	commit  = ""
+	date    = ""
+	builtBy = ""
 )
 
 func main() {
 	flag.Parse()
+	if *printVersion {
+		fmt.Printf("path-shrinker\n%s\n", getVersion(version, commit, date, builtBy))
+		os.Exit(0)
+	}
 	path, err := run(flag.Args())
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "err=%v\n", err)
@@ -93,4 +105,18 @@ func executeTransform(transformers []shrinker.Transformer, input []string) (stri
 		path = sep + path
 	}
 	return path, nil
+}
+
+func getVersion(version, commit, date, builtBy string) string {
+	var result = fmt.Sprintf("version: %s", version)
+	if commit != "" {
+		result = fmt.Sprintf("%s\ncommit: %s", result, commit)
+	}
+	if date != "" {
+		result = fmt.Sprintf("%s\nbuilt at: %s", result, date)
+	}
+	if builtBy != "" {
+		result = fmt.Sprintf("%s\nbuilt by: %s", result, builtBy)
+	}
+	return result
 }
