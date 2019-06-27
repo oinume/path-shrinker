@@ -5,10 +5,18 @@ import (
 	"strings"
 )
 
+type Mode int
+
+const (
+	ModeAmbiguous Mode = iota + 1
+	ModeShort
+)
+
 type Config struct {
 	PreserveLast bool
 	Shorten      bool
 	ReplaceTilde bool
+	Mode         Mode
 }
 
 type Transformer interface {
