@@ -27,7 +27,7 @@ func main() {
 		_, _ = fmt.Fprintf(os.Stderr, "err=%v\n", err)
 		os.Exit(1)
 	}
-	fmt.Printf("%v\n", path)
+	fmt.Println(path)
 }
 
 func run(args []string) (string, error) {
@@ -35,7 +35,6 @@ func run(args []string) (string, error) {
 	if len(args) > 0 {
 		path = args[0]
 	} else {
-		//path = os.Getenv("PWD")
 		p, err := os.Getwd()
 		if err != nil {
 			return "", err
@@ -50,7 +49,6 @@ func run(args []string) (string, error) {
 		})
 	}
 	dirs := strings.Split(path, string(os.PathSeparator))
-	//fmt.Printf("dirs = %+v\n", dirs)
 
 	shrink, err := executeTransform(transformers, dirs)
 	if err != nil {
