@@ -38,26 +38,27 @@ func main() {
 	}
 
 	config := createConfig()
-	path, err := run(flag.Args(), config)
-	if err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "err=%v\n", err)
-		os.Exit(1)
-	}
-	fmt.Println(path)
-}
-
-func run(args []string, config *shrinker.Config) (string, error) {
 	var path string
-	if len(args) > 0 {
-		path = args[0]
+	if len(flag.Args()) > 0 {
+		path = flag.Args()[0]
 	} else {
 		p, err := os.Getwd()
 		if err != nil {
-			return "", err
+			_, _ = fmt.Fprintf(os.Stderr, "failed to get current working diretory: %v\n", err)
+			os.Exit(1)
 		}
 		path = p
 	}
 
+	result, err := run(path, config)
+	if err != nil {
+		_, _ = fmt.Fprintf(os.Stderr, "failed to run: %v\n", err)
+		os.Exit(1)
+	}
+	fmt.Println(result)
+}
+
+func run(path string, config *shrinker.Config) (string, error) {
 	dirs := strings.Split(path, string(os.PathSeparator))
 	transformers := createTransformers(dirs, config)
 	shrink, err := executeTransform(transformers, dirs, config)

@@ -8,7 +8,9 @@ import (
 )
 
 func TestRun(t *testing.T) {
-	os.Setenv("HOME", "/home/oinume")
+	if err := os.Setenv("HOME", "/home/oinume"); err != nil {
+		t.Fatalf("failed to Setenv: %v", err)
+	}
 
 	tests := map[string]struct {
 		path   string
@@ -43,7 +45,7 @@ func TestRun(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			got, err := run([]string{test.path}, test.config)
+			got, err := run(test.path, test.config)
 			if err != nil {
 				t.Fatal(err)
 			}
