@@ -6,7 +6,6 @@ import (
 	"os"
 	"strings"
 
-	path_shrinker "github.com/oinume/path-shrinker"
 	shrinker "github.com/oinume/path-shrinker"
 )
 
@@ -16,7 +15,7 @@ $ pwd
 /Users/kazuhiro/go/src/github.com/oinume/path-shrinker
 $ shrink_path
 /Use/k/g/s/gi/oi/pa
- */
+*/
 var (
 	tilde = flag.Bool("tilde", false, " Substitute ~ for the home directory.")
 )
@@ -28,7 +27,7 @@ func main() {
 		_, _ = fmt.Fprintf(os.Stderr, "err=%v\n", err)
 		os.Exit(1)
 	}
-	fmt.Printf("%v\n", path)
+	fmt.Println(path)
 }
 
 func run(args []string) (string, error) {
@@ -36,7 +35,6 @@ func run(args []string) (string, error) {
 	if len(args) > 0 {
 		path = args[0]
 	} else {
-		//path = os.Getenv("PWD")
 		p, err := os.Getwd()
 		if err != nil {
 			return "", err
@@ -46,14 +44,13 @@ func run(args []string) (string, error) {
 
 	transformers := make([]shrinker.Transformer, 0, 10)
 	if *tilde {
-		transformers = append(transformers, &path_shrinker.TildeTransformer{
+		transformers = append(transformers, &shrinker.TildeTransformer{
 			HomeDir: os.Getenv("HOME"), // TODO: go-homedir
 		})
 	}
 	dirs := strings.Split(path, string(os.PathSeparator))
-	//fmt.Printf("dirs = %+v\n", dirs)
 
-	shrink, err := executeTransform(transformers, dirs);
+	shrink, err := executeTransform(transformers, dirs)
 	if err != nil {
 		return "", err
 	}
