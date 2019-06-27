@@ -87,5 +87,10 @@ func executeTransform(transformers []shrinker.Transformer, input []string) (stri
 		}
 		result = output
 	}
-	return strings.Join(result, string(os.PathSeparator)), nil
+	const sep = string(os.PathSeparator)
+	path := strings.Join(result, sep)
+	if !strings.HasPrefix(path, "~") { // TODO: config
+		path = sep + path
+	}
+	return path, nil
 }
