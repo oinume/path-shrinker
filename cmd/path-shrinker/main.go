@@ -114,9 +114,6 @@ func executeTransform(transformers []shrinker.Transformer, input []string, confi
 	if !config.ReplaceTilde {
 		path = sep + path
 	}
-	//if !strings.HasPrefix(path, "~") { // TODO: config
-	//	path = sep + path
-	//}
 	return path, nil
 }
 
