@@ -44,6 +44,7 @@ func newCLI(outStream, errStream io.Writer) *cli {
 
 func (c *cli) run(args []string) int {
 	flagSet := flag.NewFlagSet("path-shrinker", flag.ContinueOnError)
+	flagSet.SetOutput(c.errStream)
 	var (
 		fish         = flagSet.Bool("fish", false, "Enable -short -tilde -last")
 		last         = flagSet.Bool("last", false, "Print the last directory's full name.")
@@ -57,7 +58,7 @@ func (c *cli) run(args []string) int {
 	}
 
 	if *printVersion {
-		fmt.Printf("path-shrinker\n%s\n", c.getVersion(version, commit, date, builtBy))
+		_, _ = fmt.Fprintf(c.outStream, "path-shrinker\n%s\n", c.getVersion(version, commit, date, builtBy))
 		os.Exit(0)
 	}
 
@@ -85,7 +86,7 @@ func (c *cli) run(args []string) int {
 	} else {
 		p, err := os.Getwd()
 		if err != nil {
-			_, _ = fmt.Fprintf(os.Stderr, "failed to get current working diretory: %v\n", err)
+			_, _ = fmt.Fprintf(c.errStream, "failed to get current working diretory: %v\n", err)
 			return ExitError
 		}
 		path = p
@@ -93,10 +94,10 @@ func (c *cli) run(args []string) int {
 
 	result, err := c.shrinkPath(path, config)
 	if err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "failed to run: %v\n", err)
+		_, _ = fmt.Fprintf(c.errStream, "failed to run: %v\n", err)
 		return ExitError
 	}
-	fmt.Println(result)
+	_, _ = fmt.Fprintln(c.outStream, result)
 
 	return ExitOK
 }

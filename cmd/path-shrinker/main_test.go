@@ -1,12 +1,50 @@
 package main
 
 import (
+	"bytes"
 	"os"
+	"strings"
 	"testing"
-
-	shrinker "github.com/oinume/path-shrinker"
 )
 
+func TestCLI_Run(t *testing.T) {
+	if err := os.Setenv("HOME", "/home/oinume"); err != nil {
+		t.Fatalf("failed to Setenv: %v", err)
+	}
+
+	tests := map[string]struct {
+		args           []string
+		wantOutput     string
+		wantExitStatus int
+	}{
+		"short": {
+			args:           []string{"main", "-short", "/home/oinume/go"},
+			wantOutput:     "/h/o/g",
+			wantExitStatus: ExitOK,
+		},
+		"tilde short": {
+			args:           []string{"main", "-short", "-tilde", "/home/oinume/go"},
+			wantOutput:     "~/g",
+			wantExitStatus: ExitOK,
+		},
+	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			bout := new(bytes.Buffer)
+			berr := new(bytes.Buffer)
+			c := newCLI(bout, berr)
+			exitStatus := c.run(test.args)
+			if got, want := exitStatus, test.wantExitStatus; got != want {
+				t.Fatalf("cli.run returns unexpected exit status: got=%v, want=%v", got, want)
+			}
+			if got, want := strings.TrimSpace(bout.String()), test.wantOutput; got != want {
+				t.Errorf("cli.run outputs unexpected text: got=%q, want=%q", got, want)
+			}
+		})
+	}
+}
+
+/*
 func TestRun(t *testing.T) {
 	if err := os.Setenv("HOME", "/home/oinume"); err != nil {
 		t.Fatalf("failed to Setenv: %v", err)
@@ -64,3 +102,4 @@ func TestRun(t *testing.T) {
 		})
 	}
 }
+*/
