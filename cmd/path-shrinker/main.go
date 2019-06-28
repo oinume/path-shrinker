@@ -59,7 +59,7 @@ func (c *cli) run(args []string) int {
 
 	if *printVersion {
 		_, _ = fmt.Fprintf(c.outStream, "path-shrinker\n%s\n", c.getVersion(version, commit, date, builtBy))
-		os.Exit(0)
+		return ExitOK
 	}
 
 	if *fish {
