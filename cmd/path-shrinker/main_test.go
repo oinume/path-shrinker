@@ -22,9 +22,14 @@ func TestCLI_Run(t *testing.T) {
 			wantOutput:     "/h/o/g",
 			wantExitStatus: ExitOK,
 		},
-		"tilde short": {
+		"short tilde": {
 			args:           []string{"main", "-short", "-tilde", "/home/oinume/go"},
 			wantOutput:     "~/g",
+			wantExitStatus: ExitOK,
+		},
+		"last short tilde": {
+			args:           []string{"main", "-last", "-short", "-tilde", "/home/oinume/go/src"},
+			wantOutput:     "~/g/src",
 			wantExitStatus: ExitOK,
 		},
 	}
