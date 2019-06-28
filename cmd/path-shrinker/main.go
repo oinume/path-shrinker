@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -16,13 +17,6 @@ $ pwd
 $ shrink_path
 /Use/k/g/s/gi/oi/pa
 */
-var (
-	fish         = flag.Bool("fish", false, "Enable -short -tilde -last")
-	last         = flag.Bool("last", false, "Print the last directory's full name.")
-	short        = flag.Bool("short", false, "Truncate directory names to the first character. Without -short, names are truncated without making them ambiguous.")
-	tilde        = flag.Bool("tilde", false, "Substitute ~ for the home directory.")
-	printVersion = flag.Bool("version", false, "Print current version.")
-)
 
 var (
 	version = "dev"
@@ -31,45 +25,98 @@ var (
 	builtBy = ""
 )
 
-func main() {
-	flag.Parse()
-	if *printVersion {
-		fmt.Printf("path-shrinker\n%s\n", getVersion(version, commit, date, builtBy))
-		os.Exit(0)
+const (
+	ExitOK    = 0
+	ExitError = 1
+)
+
+type cli struct {
+	outStream io.Writer
+	errStream io.Writer
+}
+
+func newCLI(outStream, errStream io.Writer) *cli {
+	return &cli{
+		outStream: outStream,
+		errStream: errStream,
+	}
+}
+
+func (c *cli) run(args []string) int {
+	flagSet := flag.NewFlagSet("path-shrinker", flag.ContinueOnError)
+	flagSet.SetOutput(c.errStream)
+	var (
+		fish         = flagSet.Bool("fish", false, "Enable -short -tilde -last")
+		last         = flagSet.Bool("last", false, "Print the last directory's full name.")
+		short        = flagSet.Bool("short", false, "Truncate directory names to the first character. Without -short, names are truncated without making them ambiguous.")
+		tilde        = flagSet.Bool("tilde", false, "Substitute ~ for the home directory.")
+		printVersion = flagSet.Bool("version", false, "Print current version.")
+	)
+
+	if err := flagSet.Parse(args[1:]); err != nil {
+		return ExitError
 	}
 
-	config := createConfig()
+	if *printVersion {
+		_, _ = fmt.Fprintf(c.outStream, "path-shrinker\n%s\n", c.getVersion(version, commit, date, builtBy))
+		return ExitOK
+	}
+
+	if *fish {
+		*tilde = true
+		*last = true
+		*short = true
+	}
+	config := &shrinker.Config{}
+	if *tilde {
+		config.ReplaceTilde = true
+	}
+	if *last {
+		config.PreserveLast = true
+	}
+	if *short {
+		config.Mode = shrinker.ModeShort
+	} else {
+		config.Mode = shrinker.ModeAmbiguous
+	}
+
 	var path string
-	if len(flag.Args()) > 0 {
-		path = flag.Args()[0]
+	if len(flagSet.Args()) > 0 {
+		path = flagSet.Args()[0]
 	} else {
 		p, err := os.Getwd()
 		if err != nil {
-			_, _ = fmt.Fprintf(os.Stderr, "failed to get current working diretory: %v\n", err)
-			os.Exit(1)
+			_, _ = fmt.Fprintf(c.errStream, "failed to get current working diretory: %v\n", err)
+			return ExitError
 		}
 		path = p
 	}
 
-	result, err := run(path, config)
+	result, err := c.shrinkPath(path, config)
 	if err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "failed to run: %v\n", err)
-		os.Exit(1)
+		_, _ = fmt.Fprintf(c.errStream, "failed to run: %v\n", err)
+		return ExitError
 	}
-	fmt.Println(result)
+	_, _ = fmt.Fprintln(c.outStream, result)
+
+	return ExitOK
 }
 
-func run(path string, config *shrinker.Config) (string, error) {
+func main() {
+	os.Exit(newCLI(os.Stdout, os.Stderr).run(os.Args))
+}
+
+func (c *cli) shrinkPath(path string, config *shrinker.Config) (string, error) {
 	dirs := strings.Split(path, string(os.PathSeparator))
-	transformers := createTransformers(dirs, config)
-	shrink, err := executeTransform(transformers, dirs, config)
+	transformers := c.createTransformers(dirs, config)
+	shrink, err := c.executeTransform(transformers, dirs, config)
 	if err != nil {
 		return "", err
 	}
 	return shrink, nil
 }
 
-func createTransformers(dirs []string, config *shrinker.Config) []shrinker.Transformer {
+func (c *cli) createTransformers(dirs []string, config *shrinker.Config) []shrinker.Transformer {
 	// -tilde, -short, -last are enabled
 	// -> Process order: tilde, short, last
 	// -amb, -last are enabled
@@ -99,7 +146,7 @@ func createTransformers(dirs []string, config *shrinker.Config) []shrinker.Trans
 	return transformers
 }
 
-func executeTransform(transformers []shrinker.Transformer, input []string, config *shrinker.Config) (string, error) {
+func (c *cli) executeTransform(transformers []shrinker.Transformer, input []string, config *shrinker.Config) (string, error) {
 	result := input
 	for _, t := range transformers {
 		if len(result) == 0 {
@@ -119,7 +166,7 @@ func executeTransform(transformers []shrinker.Transformer, input []string, confi
 	return path, nil
 }
 
-func getVersion(version, commit, date, builtBy string) string {
+func (c *cli) getVersion(version, commit, date, builtBy string) string {
 	var result = fmt.Sprintf("version: %s", version)
 	if commit != "" {
 		result = fmt.Sprintf("%s\ncommit: %s", result, commit)
@@ -131,26 +178,4 @@ func getVersion(version, commit, date, builtBy string) string {
 		result = fmt.Sprintf("%s\nbuilt by: %s", result, builtBy)
 	}
 	return result
-}
-
-func createConfig() *shrinker.Config {
-	if *fish {
-		*tilde = true
-		*last = true
-		*short = true
-	}
-
-	c := &shrinker.Config{}
-	if *tilde {
-		c.ReplaceTilde = true
-	}
-	if *last {
-		c.PreserveLast = true
-	}
-	if *short {
-		c.Mode = shrinker.ModeShort
-	} else {
-		c.Mode = shrinker.ModeAmbiguous
-	}
-	return c
 }
