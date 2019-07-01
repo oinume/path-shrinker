@@ -47,3 +47,7 @@ staticcheck:
 .PHONY: errcheck
 errcheck:
 	tools/bin/errcheck -ignore 'fmt:[FS]?[Pp]rint*' $(LINT_PACKAGES)
+
+.PHONY: clean
+clean:
+	${RM} bin/$(NAME)
