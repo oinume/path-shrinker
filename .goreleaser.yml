@@ -2,22 +2,34 @@
 # Make sure to check the documentation at http://goreleaser.com
 before:
   hooks:
+    - make clean
     # you may remove this if you don't use vgo
     - go mod download
-    # you may remove this if you don't need go generate
-    #- go generate ./...
+    #- touch {{ .Env.FILE_TO_TOUCH }}
 builds:
-- env:
-  - CGO_ENABLED=0
+  -
+    env:
+    - CGO_ENABLED=0
+    main: ./cmd/path-shrinker/main.go
+    binary: bin/path-shrinker
+    goos:
+      - darwin
+      - linux
+      - windows
 archives:
-- replacements:
-    darwin: Darwin
-    linux: Linux
-    windows: Windows
-    386: i386
-    amd64: x86_64
+  -
+    replacements:
+      darwin: Darwin
+      linux: Linux
+      windows: Windows
+      386: i386
+      amd64: x86_64
+    wrap_in_directory: true
+    format_overrides:
+      - goos: windows
+        format: zip
 checksum:
-  name_template: 'checksums.txt'
+  name_template: "{{ .ProjectName }}_checksums.txt"
 snapshot:
   name_template: "{{ .Tag }}-next"
 changelog:
