@@ -41,4 +41,5 @@ Option        Result
        
 ## Install
 
-You can download binary from GitHub.
+### Download from GitHub
+You can download binary from [GitHub](https://github.com/oinume/path-shrinker/releases).
