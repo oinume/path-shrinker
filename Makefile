@@ -51,3 +51,4 @@ errcheck:
 .PHONY: clean
 clean:
 	${RM} bin/$(NAME)
+	${RM} -fr dist/*
