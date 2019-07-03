@@ -36,6 +36,7 @@ func (tt *ReplaceTildeTransformer) Transform(input []string) ([]string, error) {
 type AmbiguousTransformer struct{}
 
 func (at *AmbiguousTransformer) Transform(input []string) ([]string, error) {
+	// TODO: check directory. https://flaviocopes.com/go-list-files/
 	length := len(input)
 	result := make([]string, 0, length)
 	for i, v := range input {
