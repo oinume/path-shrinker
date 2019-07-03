@@ -2,6 +2,7 @@ package shrinker
 
 import (
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -33,9 +34,19 @@ func (tt *ReplaceTildeTransformer) Transform(input []string) ([]string, error) {
 	return strings.Split(path, string(os.PathSeparator)), nil
 }
 
-type AmbiguousTransformer struct{}
+type AmbiguousTransformer struct {
+	startDir string
+}
 
 func (at *AmbiguousTransformer) Transform(input []string) ([]string, error) {
+	//ioutil.ReadDir()
+	walk := func(path string, info os.FileInfo, err error) error {
+		return nil
+	}
+	if err := filepath.Walk(at.startDir, walk); err != nil {
+		return nil, err
+	}
+
 	// TODO: check directory. https://flaviocopes.com/go-list-files/
 	length := len(input)
 	result := make([]string, 0, length)
