@@ -2,9 +2,12 @@ package shrinker
 
 import (
 	"fmt"
+	"io/ioutil"
+	"math"
 	"os"
 	"path/filepath"
 	"strings"
+	"unicode"
 )
 
 type Mode int
@@ -40,57 +43,86 @@ type AmbiguousTransformer struct {
 }
 
 func (at *AmbiguousTransformer) getAmbiguousName(parent string, target string) (string, error) {
-	result := target
-	walk := func(path string, info os.FileInfo, err error) error {
-		if !info.IsDir() {
-			return nil
-		}
-		fmt.Printf("walk(): path=%v\n", path)
-		if target == info.Name() {
-			result = "[A]"
-		}
-		return nil
-	}
-	if err := filepath.Walk(target, walk); err != nil {
+	result := ""
+	files, err := ioutil.ReadDir(parent)
+	if err != nil {
 		return "", err
+	}
+
+	for _, f := range files {
+		fmt.Printf("target = %+v, f = %+v\n", target, f.Name())
+		if !f.IsDir() {
+			continue
+		}
+		if f.Name() == target {
+			continue
+		}
+
+		nameRunes := []rune(f.Name())
+		targetRunes := []rune(target)
+		length := int(math.Max(float64(len(nameRunes)), float64(len(targetRunes))))
+		a := make([]rune, 0, length)
+		previousMatched := true
+		var i int
+		for i = 0; i < len(target); i++ {
+			// Compare character case insensitively
+			if previousMatched && unicode.ToLower(nameRunes[i]) == unicode.ToLower(targetRunes[i]) {
+				a = append(a, targetRunes[i])
+			} else {
+				previousMatched = false
+				break
+			}
+		}
+		if i < len(target)-1 {
+			// Append additional 1 rune to distinguish name
+			a = append(a, targetRunes[i])
+		}
+
+		if len(a) > len(result) {
+			result = string(a)
+		}
+	}
+
+	if len(result) == 0 {
+		result = string([]rune(target)[0])
 	}
 	return result, nil
 }
 
 func (at *AmbiguousTransformer) Transform(input []string) ([]string, error) {
 	//at.findAmbiguous
-	for i, dir := range input {
-		at.getAmbiguousName(at.StartDir, input[i])
-	}
-
-	fmt.Printf("input = %+v\n", input)
-	//ioutil.ReadDir()
-	walk := func(path string, info os.FileInfo, err error) error {
-		if !info.IsDir() {
-			return nil
-		}
-		fmt.Printf("walk(): path=%v\n", path)
-		return nil
-	}
-	if err := filepath.Walk(at.StartDir, walk); err != nil {
-		return nil, err
-	}
-
-	// TODO: check directory. https://flaviocopes.com/go-list-files/
-	length := len(input)
-	result := make([]string, 0, length)
-	for i, v := range input {
-		runes := []rune(v)
-		if len(runes) == 0 {
+	parent := at.StartDir
+	result := make([]string, 0, len(input))
+	for _, dir := range input {
+		if dir == "" {
 			continue
 		}
-		if i == length-1 && len(runes) > 1 {
-			result = append(result, string(runes[0])+string(runes[1]))
-		} else {
-			result = append(result, string(runes[0]))
+		name, err := at.getAmbiguousName(parent, dir)
+		if err != nil {
+			return nil, err
 		}
+		result = append(result, name)
+		parent = filepath.Join(parent, dir)
 	}
 	return result, nil
+
+	//fmt.Printf("input = %+v\n", input)
+	//ioutil.ReadDir()
+	// TODO: check directory. https://flaviocopes.com/go-list-files/
+	//length := len(input)
+	//result := make([]string, 0, length)
+	//for i, v := range input {
+	//	runes := []rune(v)
+	//	if len(runes) == 0 {
+	//		continue
+	//	}
+	//	if i == length-1 && len(runes) > 1 {
+	//		result = append(result, string(runes[0])+string(runes[1]))
+	//	} else {
+	//		result = append(result, string(runes[0]))
+	//	}
+	//}
+	//return result, nil
 }
 
 type ShortenTransformer struct{}
