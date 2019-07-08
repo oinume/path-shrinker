@@ -35,7 +35,7 @@ func (tt *ReplaceTildeTransformer) Transform(input []string) ([]string, error) {
 }
 
 type AmbiguousTransformer struct {
-	startDir string
+	StartDir string
 }
 
 func (at *AmbiguousTransformer) Transform(input []string) ([]string, error) {
@@ -43,7 +43,7 @@ func (at *AmbiguousTransformer) Transform(input []string) ([]string, error) {
 	walk := func(path string, info os.FileInfo, err error) error {
 		return nil
 	}
-	if err := filepath.Walk(at.startDir, walk); err != nil {
+	if err := filepath.Walk(at.StartDir, walk); err != nil {
 		return nil, err
 	}
 

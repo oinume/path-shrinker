@@ -130,7 +130,15 @@ func (c *cli) createTransformers(dirs []string, config *shrinker.Config) []shrin
 
 	switch config.Mode {
 	case shrinker.ModeAmbiguous:
-		transformers = append(transformers, &shrinker.AmbiguousTransformer{})
+		var startDir string
+		if config.ReplaceTilde {
+			startDir = os.Getenv("HOME") // TODO: go-homedir
+		} else {
+			startDir = "/" // TODO: Windows
+		}
+		transformers = append(transformers, &shrinker.AmbiguousTransformer{
+			StartDir: startDir,
+		})
 	case shrinker.ModeShort:
 		transformers = append(transformers, &shrinker.ShortenTransformer{})
 	default:
