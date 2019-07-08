@@ -1,6 +1,7 @@
 package shrinker
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -38,9 +39,37 @@ type AmbiguousTransformer struct {
 	StartDir string
 }
 
+func (at *AmbiguousTransformer) getAmbiguousName(parent string, target string) (string, error) {
+	result := target
+	walk := func(path string, info os.FileInfo, err error) error {
+		if !info.IsDir() {
+			return nil
+		}
+		fmt.Printf("walk(): path=%v\n", path)
+		if target == info.Name() {
+			result = "[A]"
+		}
+		return nil
+	}
+	if err := filepath.Walk(target, walk); err != nil {
+		return "", err
+	}
+	return result, nil
+}
+
 func (at *AmbiguousTransformer) Transform(input []string) ([]string, error) {
+	//at.findAmbiguous
+	for i, dir := range input {
+		at.getAmbiguousName(at.StartDir, input[i])
+	}
+
+	fmt.Printf("input = %+v\n", input)
 	//ioutil.ReadDir()
 	walk := func(path string, info os.FileInfo, err error) error {
+		if !info.IsDir() {
+			return nil
+		}
+		fmt.Printf("walk(): path=%v\n", path)
 		return nil
 	}
 	if err := filepath.Walk(at.StartDir, walk); err != nil {
