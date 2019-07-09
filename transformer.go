@@ -90,13 +90,13 @@ func (at *AmbiguousTransformer) getAmbiguousName(parent string, target string) (
 }
 
 func (at *AmbiguousTransformer) Transform(input []string) ([]string, error) {
-	//at.findAmbiguous
 	parent := at.StartDir
 	result := make([]string, 0, len(input))
 	for _, dir := range input {
 		if dir == "" {
 			continue
 		}
+		// TODO: goroutine
 		name, err := at.getAmbiguousName(parent, dir)
 		if err != nil {
 			return nil, err
@@ -105,24 +105,6 @@ func (at *AmbiguousTransformer) Transform(input []string) ([]string, error) {
 		parent = filepath.Join(parent, dir)
 	}
 	return result, nil
-
-	//fmt.Printf("input = %+v\n", input)
-	//ioutil.ReadDir()
-	// TODO: check directory. https://flaviocopes.com/go-list-files/
-	//length := len(input)
-	//result := make([]string, 0, length)
-	//for i, v := range input {
-	//	runes := []rune(v)
-	//	if len(runes) == 0 {
-	//		continue
-	//	}
-	//	if i == length-1 && len(runes) > 1 {
-	//		result = append(result, string(runes[0])+string(runes[1]))
-	//	} else {
-	//		result = append(result, string(runes[0]))
-	//	}
-	//}
-	//return result, nil
 }
 
 type ShortenTransformer struct{}
