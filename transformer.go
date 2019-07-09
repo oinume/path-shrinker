@@ -2,7 +2,6 @@ package shrinker
 
 import (
 	"fmt"
-	"io/ioutil"
 	"math"
 	"os"
 	"path/filepath"
@@ -38,13 +37,16 @@ func (tt *ReplaceTildeTransformer) Transform(input []string) ([]string, error) {
 	return strings.Split(path, string(os.PathSeparator)), nil
 }
 
+type ReadDirFunc func(dirname string) ([]os.FileInfo, error)
+
 type AmbiguousTransformer struct {
-	StartDir string
+	StartDir    string
+	ReadDirFunc ReadDirFunc
 }
 
-func (at *AmbiguousTransformer) getAmbiguousName(parent string, target string) (string, error) {
+func (at *AmbiguousTransformer) getAmbiguousName(parent, target string) (string, error) {
 	result := ""
-	files, err := ioutil.ReadDir(parent)
+	files, err := at.ReadDirFunc(parent)
 	if err != nil {
 		return "", err
 	}

@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"strings"
 
@@ -137,7 +138,8 @@ func (c *cli) createTransformers(dirs []string, config *shrinker.Config) []shrin
 			startDir = "/" // TODO: Windows
 		}
 		transformers = append(transformers, &shrinker.AmbiguousTransformer{
-			StartDir: startDir,
+			StartDir:    startDir,
+			ReadDirFunc: ioutil.ReadDir,
 		})
 	case shrinker.ModeShort:
 		transformers = append(transformers, &shrinker.ShortenTransformer{})
