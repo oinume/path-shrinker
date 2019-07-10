@@ -32,14 +32,16 @@ const (
 )
 
 type cli struct {
-	outStream io.Writer
-	errStream io.Writer
+	outStream   io.Writer
+	errStream   io.Writer
+	readDirFunc shrinker.ReadDirFunc
 }
 
-func newCLI(outStream, errStream io.Writer) *cli {
+func newCLI(outStream, errStream io.Writer, readDirFunc shrinker.ReadDirFunc) *cli {
 	return &cli{
-		outStream: outStream,
-		errStream: errStream,
+		outStream:   outStream,
+		errStream:   errStream,
+		readDirFunc: readDirFunc,
 	}
 }
 
@@ -104,7 +106,11 @@ func (c *cli) run(args []string) int {
 }
 
 func main() {
-	os.Exit(newCLI(os.Stdout, os.Stderr).run(os.Args))
+	os.Exit(newCLI(
+		os.Stdout,
+		os.Stderr,
+		ioutil.ReadDir,
+	).run(os.Args))
 }
 
 func (c *cli) shrinkPath(path string, config *shrinker.Config) (string, error) {
@@ -139,7 +145,7 @@ func (c *cli) createTransformers(dirs []string, config *shrinker.Config) []shrin
 		}
 		transformers = append(transformers, &shrinker.AmbiguousTransformer{
 			StartDir:    startDir,
-			ReadDirFunc: ioutil.ReadDir,
+			ReadDirFunc: c.readDirFunc,
 		})
 	case shrinker.ModeShort:
 		transformers = append(transformers, &shrinker.ShortenTransformer{})
