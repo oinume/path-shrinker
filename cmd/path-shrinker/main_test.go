@@ -8,43 +8,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/oinume/path-shrinker/shrinker_test"
+
 	shrinker "github.com/oinume/path-shrinker"
 )
 
 func mockReadDir(dirname string) ([]os.FileInfo, error) {
 	return nil, nil
-}
-
-type mockFileInfo struct {
-	name    string
-	size    int64
-	mode    os.FileMode
-	modTime time.Time
-	isDir   bool
-}
-
-func (m *mockFileInfo) Name() string {
-	return m.name
-}
-
-func (m *mockFileInfo) Size() int64 {
-	panic("implement me")
-}
-
-func (m *mockFileInfo) Mode() os.FileMode {
-	panic("implement me")
-}
-
-func (m *mockFileInfo) ModTime() time.Time {
-	panic("implement me")
-}
-
-func (m *mockFileInfo) IsDir() bool {
-	return m.isDir
-}
-
-func (m *mockFileInfo) Sys() interface{} {
-	panic("implement me")
 }
 
 func TestCLI_Run_OK(t *testing.T) {
@@ -87,10 +57,7 @@ func TestCLI_Run_OK(t *testing.T) {
 			wantOutput: "/h/o/g/s/gith",
 			readDirFunc: func(dirname string) ([]os.FileInfo, error) {
 				ret := []os.FileInfo{
-					&mockFileInfo{
-						name:  "git",
-						isDir: true,
-					},
+					shrinker_test.NewMockFileInfo("git", 0, 0755, time.Now(), true),
 				}
 				return ret, nil
 			},
