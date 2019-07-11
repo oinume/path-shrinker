@@ -46,6 +46,7 @@ type AmbiguousTransformer struct {
 
 func (at *AmbiguousTransformer) getAmbiguousName(parent, target string) (string, error) {
 	result := ""
+	fmt.Printf("at.ReadDirFunc = %+v\n", at.ReadDirFunc)
 	files, err := at.ReadDirFunc(parent)
 	if err != nil {
 		return "", err
