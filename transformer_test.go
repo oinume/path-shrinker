@@ -127,11 +127,11 @@ func TestAmbiguousTransformer_getAmbiguousName(t *testing.T) {
 		want    string
 		wantErr bool
 	}{
-		"same_name_exists": {
+		"similar_name_exists": {
 			fields: fields{
 				startDir: "a",
 				readDirFunc: func(dirname string) ([]os.FileInfo, error) {
-					info := shrinker_test.NewMockFileInfo("Users", 0, 0755, time.Now(), true)
+					info := shrinker_test.NewMockFileInfo("Usr", 0, 0755, time.Now(), true)
 					return []os.FileInfo{info}, nil
 				},
 			},
@@ -139,10 +139,38 @@ func TestAmbiguousTransformer_getAmbiguousName(t *testing.T) {
 				parent: "a",
 				target: "Users",
 			},
+			want: "Use",
+		},
+		"no_similar_name": {
+			fields: fields{
+				startDir: "a",
+				readDirFunc: func(dirname string) ([]os.FileInfo, error) {
+					info := shrinker_test.NewMockFileInfo("Home", 0, 0755, time.Now(), true)
+					return []os.FileInfo{info}, nil
+				},
+			},
+			args: args{
+				parent: "a",
+				target: "Users",
+			},
+			want: "U",
+		},
+		"empty_target": {
+			fields: fields{
+				startDir: "a",
+				readDirFunc: func(dirname string) ([]os.FileInfo, error) {
+					info := shrinker_test.NewMockFileInfo("Home", 0, 0755, time.Now(), true)
+					return []os.FileInfo{info}, nil
+				},
+			},
+			args: args{
+				parent: "a",
+				target: "",
+			},
 			want: "",
 		},
-		//"no_same_name": {},
 	}
+
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			at := &AmbiguousTransformer{
@@ -151,11 +179,11 @@ func TestAmbiguousTransformer_getAmbiguousName(t *testing.T) {
 			}
 			got, err := at.getAmbiguousName(test.args.parent, test.args.target)
 			if (err != nil) != test.wantErr {
-				t.Errorf("AmbiguousTransformer.getAmbiguousName() error = %v, wantErr %v", err, test.wantErr)
+				t.Errorf("AmbiguousTransformer.getAmbiguousName(): error=%v, wantErr=%v", err, test.wantErr)
 				return
 			}
 			if got != test.want {
-				t.Errorf("AmbiguousTransformer.getAmbiguousName() = %q, want %q", got, test.want)
+				t.Errorf("AmbiguousTransformer.getAmbiguousName(): got=%q, want=%q", got, test.want)
 			}
 		})
 	}

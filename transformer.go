@@ -1,7 +1,6 @@
 package shrinker
 
 import (
-	"fmt"
 	"math"
 	"os"
 	"path/filepath"
@@ -45,15 +44,16 @@ type AmbiguousTransformer struct {
 }
 
 func (at *AmbiguousTransformer) getAmbiguousName(parent, target string) (string, error) {
+	if target == "" {
+		return "", nil
+	}
 	result := ""
-	fmt.Printf("at.ReadDirFunc = %+v\n", at.ReadDirFunc)
 	files, err := at.ReadDirFunc(parent)
 	if err != nil {
 		return "", err
 	}
 
 	for _, f := range files {
-		fmt.Printf("target = %+v, f = %+v\n", target, f.Name())
 		if !f.IsDir() {
 			continue
 		}
