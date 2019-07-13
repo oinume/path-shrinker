@@ -63,11 +63,12 @@ func (at *AmbiguousTransformer) getAmbiguousName(parent, target string) (string,
 
 		nameRunes := []rune(f.Name())
 		targetRunes := []rune(target)
-		length := int(math.Max(float64(len(nameRunes)), float64(len(targetRunes))))
-		a := make([]rune, 0, length)
+		maxLength := int(math.Max(float64(len(nameRunes)), float64(len(targetRunes))))
+		minLength := int(math.Min(float64(len(nameRunes)), float64(len(targetRunes))))
+		a := make([]rune, 0, maxLength)
 		previousMatched := true
 		var i int
-		for i = 0; i < len(target); i++ {
+		for i = 0; i < minLength; i++ {
 			// Compare character case insensitively
 			if previousMatched && unicode.ToLower(nameRunes[i]) == unicode.ToLower(targetRunes[i]) {
 				a = append(a, targetRunes[i])
