@@ -11,14 +11,6 @@ import (
 	shrinker "github.com/oinume/path-shrinker"
 )
 
-// https://github.com/robbyrussell/oh-my-zsh/tree/master/plugins/shrink-path
-/*
-$ pwd
-/Users/kazuhiro/go/src/github.com/oinume/path-shrinker
-$ shrink_path
-/Use/k/g/s/gi/oi/pa
-*/
-
 var (
 	version = "dev"
 	commit  = ""
