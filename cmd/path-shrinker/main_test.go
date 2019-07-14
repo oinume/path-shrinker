@@ -83,18 +83,51 @@ func TestCLI_Run_OK(t *testing.T) {
 	}
 }
 
+func TestCLI_Run_PrintVersion(t *testing.T) {
+	if err := os.Setenv("HOME", "/home/oinume"); err != nil {
+		t.Fatalf("failed to Setenv: %v", err)
+	}
+
+	version = "1.0.0"
+	commit = "abc"
+	tests := map[string]struct {
+		args       []string
+		wantOutput string
+	}{
+		"version": {
+			args:       []string{"main", "-version", "/home/oinume/go"},
+			wantOutput: "path-shrinker\nversion: 1.0.0\ncommit: abc\n",
+		},
+	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			bout := new(bytes.Buffer)
+			berr := new(bytes.Buffer)
+			c := newCLI(bout, berr, ioutil.ReadDir)
+			exitStatus := c.run(test.args)
+			if got, want := exitStatus, ExitOK; got != want {
+				t.Fatalf("cli.run returns unexpected exit status: got=%v, want=%v", got, want)
+			}
+			if got := bout.String(); got != test.wantOutput {
+				t.Errorf("cli.run outputs unexpected text to stdout: got=%q, want=%q", got, test.wantOutput)
+			}
+			if berr.String() != "" {
+				t.Errorf("cli.run outputs text to stderr somehow: %q", berr.String())
+			}
+		})
+	}
+}
+
 func TestCLI_Run_FlagError(t *testing.T) {
 	if err := os.Setenv("HOME", "/home/oinume"); err != nil {
 		t.Fatalf("failed to Setenv: %v", err)
 	}
 
 	tests := map[string]struct {
-		args       []string
-		wantOutput string
+		args []string
 	}{
 		"unknown flag": {
-			args:       []string{"main", "-unknown", "/home/oinume/go"},
-			wantOutput: "/h/o/g",
+			args: []string{"main", "-unknown", "/home/oinume/go"},
 		},
 	}
 	for name, test := range tests {
