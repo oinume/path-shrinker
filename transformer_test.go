@@ -112,6 +112,53 @@ func TestPreserveLastTransformer_Transform(t *testing.T) {
 	}
 }
 
+func TestAmbiguousTransformer_Transform(t *testing.T) {
+	tests := map[string]struct {
+		input       []string
+		want        []string
+		wantErr     error
+		readDirFunc ReadDirFunc
+	}{
+		"similar directories exist": {
+			input:   strings.Split("/Users/oinume/go/src/github.com", string(os.PathSeparator)),
+			want:    []string{"U", "o", "go", "s", "gith"},
+			wantErr: nil,
+			readDirFunc: func(dirname string) (infos []os.FileInfo, e error) {
+				return []os.FileInfo{
+					shrinker_test.NewMockFileInfo("go2", 0, 0755, time.Now(), true),
+					shrinker_test.NewMockFileInfo("git", 0, 0755, time.Now(), true),
+				}, nil
+			},
+		},
+		"no similar directories exist": {
+			input:   strings.Split("/Users/oinume/go/src/github.com", string(os.PathSeparator)),
+			want:    []string{"U", "o", "g", "s", "g"},
+			wantErr: nil,
+			readDirFunc: func(dirname string) (infos []os.FileInfo, e error) {
+				return nil, nil
+			},
+		},
+	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			tr := &AmbiguousTransformer{
+				StartDir:    "/",
+				ReadDirFunc: test.readDirFunc,
+			}
+			got, err := tr.Transform(test.input)
+			if test.wantErr == nil {
+				if !reflect.DeepEqual(got, test.want) {
+					t.Errorf("unexpected result: got=%+v but want=%+v", got, test.want)
+				}
+			} else {
+				if !reflect.DeepEqual(err, test.wantErr) {
+					t.Fatalf("unexpected error: got=%v, want=%v", err, test.wantErr)
+				}
+			}
+		})
+	}
+}
+
 func TestAmbiguousTransformer_getAmbiguousName(t *testing.T) {
 	type fields struct {
 		startDir    string
