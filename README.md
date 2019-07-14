@@ -7,12 +7,21 @@
 
 path-shrinker is a command to shrink directory path like this.
 
-```
-$ pwd
-/Users/oinuma/go/src/github.com/oinume/path-shrinker
-
-$ path-shrinker -short -last -tilde
+```shell
+$ path-shrinker -short -last -tilde /Users/oinuma/go/src/github.com/oinume/path-shrinker
 ~/g/s/g/o/path-shrinker
+```
+
+## Install
+
+### Download a binary
+
+You can download a binary from [GitHub](https://github.com/oinume/path-shrinker/releases).
+
+## Customize your Bash prompt with path-shrinker
+
+```shell
+export PS1=TODO
 ```
 
 ## Examples
@@ -39,7 +48,3 @@ Option        Result
 -f|--fish     ~/f/b/quux
 ```
        
-## Install
-
-### Download from GitHub
-You can download binary from [GitHub](https://github.com/oinume/path-shrinker/releases).
