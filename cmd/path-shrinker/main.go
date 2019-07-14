@@ -4,19 +4,12 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"strings"
 
 	shrinker "github.com/oinume/path-shrinker"
 )
-
-// https://github.com/robbyrussell/oh-my-zsh/tree/master/plugins/shrink-path
-/*
-$ pwd
-/Users/kazuhiro/go/src/github.com/oinume/path-shrinker
-$ shrink_path
-/Use/k/g/s/gi/oi/pa
-*/
 
 var (
 	version = "dev"
@@ -31,14 +24,16 @@ const (
 )
 
 type cli struct {
-	outStream io.Writer
-	errStream io.Writer
+	outStream   io.Writer
+	errStream   io.Writer
+	readDirFunc shrinker.ReadDirFunc
 }
 
-func newCLI(outStream, errStream io.Writer) *cli {
+func newCLI(outStream, errStream io.Writer, readDirFunc shrinker.ReadDirFunc) *cli {
 	return &cli{
-		outStream: outStream,
-		errStream: errStream,
+		outStream:   outStream,
+		errStream:   errStream,
+		readDirFunc: readDirFunc,
 	}
 }
 
@@ -103,7 +98,11 @@ func (c *cli) run(args []string) int {
 }
 
 func main() {
-	os.Exit(newCLI(os.Stdout, os.Stderr).run(os.Args))
+	os.Exit(newCLI(
+		os.Stdout,
+		os.Stderr,
+		ioutil.ReadDir,
+	).run(os.Args))
 }
 
 func (c *cli) shrinkPath(path string, config *shrinker.Config) (string, error) {
@@ -130,7 +129,16 @@ func (c *cli) createTransformers(dirs []string, config *shrinker.Config) []shrin
 
 	switch config.Mode {
 	case shrinker.ModeAmbiguous:
-		transformers = append(transformers, &shrinker.AmbiguousTransformer{})
+		var startDir string
+		if config.ReplaceTilde {
+			startDir = os.Getenv("HOME") // TODO: go-homedir
+		} else {
+			startDir = "/" // TODO: Windows
+		}
+		transformers = append(transformers, &shrinker.AmbiguousTransformer{
+			StartDir:    startDir,
+			ReadDirFunc: c.readDirFunc,
+		})
 	case shrinker.ModeShort:
 		transformers = append(transformers, &shrinker.ShortenTransformer{})
 	default:

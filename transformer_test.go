@@ -5,6 +5,9 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"time"
+
+	"github.com/oinume/path-shrinker/shrinker_test"
 )
 
 func TestReplaceTildeTransformer_Transform(t *testing.T) {
@@ -104,6 +107,83 @@ func TestPreserveLastTransformer_Transform(t *testing.T) {
 				if !reflect.DeepEqual(err, test.wantErr) {
 					t.Fatal()
 				}
+			}
+		})
+	}
+}
+
+func TestAmbiguousTransformer_getAmbiguousName(t *testing.T) {
+	type fields struct {
+		startDir    string
+		readDirFunc ReadDirFunc
+	}
+	type args struct {
+		parent string
+		target string
+	}
+	tests := map[string]struct {
+		fields  fields
+		args    args
+		want    string
+		wantErr bool
+	}{
+		"similar_name_exists": {
+			fields: fields{
+				startDir: "a",
+				readDirFunc: func(dirname string) ([]os.FileInfo, error) {
+					info := shrinker_test.NewMockFileInfo("Usr", 0, 0755, time.Now(), true)
+					return []os.FileInfo{info}, nil
+				},
+			},
+			args: args{
+				parent: "a",
+				target: "Users",
+			},
+			want: "Use",
+		},
+		"no_similar_name": {
+			fields: fields{
+				startDir: "a",
+				readDirFunc: func(dirname string) ([]os.FileInfo, error) {
+					info := shrinker_test.NewMockFileInfo("Home", 0, 0755, time.Now(), true)
+					return []os.FileInfo{info}, nil
+				},
+			},
+			args: args{
+				parent: "a",
+				target: "Users",
+			},
+			want: "U",
+		},
+		"empty_target": {
+			fields: fields{
+				startDir: "a",
+				readDirFunc: func(dirname string) ([]os.FileInfo, error) {
+					info := shrinker_test.NewMockFileInfo("Home", 0, 0755, time.Now(), true)
+					return []os.FileInfo{info}, nil
+				},
+			},
+			args: args{
+				parent: "a",
+				target: "",
+			},
+			want: "",
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			at := &AmbiguousTransformer{
+				StartDir:    test.fields.startDir,
+				ReadDirFunc: test.fields.readDirFunc,
+			}
+			got, err := at.getAmbiguousName(test.args.parent, test.args.target)
+			if (err != nil) != test.wantErr {
+				t.Errorf("AmbiguousTransformer.getAmbiguousName(): error=%v, wantErr=%v", err, test.wantErr)
+				return
+			}
+			if got != test.want {
+				t.Errorf("AmbiguousTransformer.getAmbiguousName(): got=%q, want=%q", got, test.want)
 			}
 		})
 	}
