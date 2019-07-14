@@ -20,8 +20,16 @@ You can download a binary from [GitHub](https://github.com/oinume/path-shrinker/
 
 ## Customize your Bash prompt with path-shrinker
 
+Define `PS1` in your .bashrc or .bash_profile.
+
 ```shell
-export PS1=TODO
+PS1='$(path-shrinker -fish) $ '
+```
+
+Then your terminal will show a prompt like this:
+```shell
+~/g/s/g/o/path-shrinker $ pwd
+/Users/kazuhiro/go/src/github.com/oinume/path-shrinker
 ```
 
 ## Examples
@@ -47,4 +55,3 @@ Option        Result
 -t|--tilde    ~/f/ba/q
 -f|--fish     ~/f/b/quux
 ```
-       
