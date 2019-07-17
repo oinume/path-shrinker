@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/mitchellh/go-homedir"
 	shrinker "github.com/oinume/path-shrinker"
 )
 
@@ -115,15 +116,20 @@ func (c *cli) shrinkPath(path string, config *shrinker.Config) (string, error) {
 	return shrink, nil
 }
 
-func (c *cli) createTransformers(dirs []string, config *shrinker.Config) []shrinker.Transformer {
+func (c *cli) createTransformers(dirs []string, config *shrinker.Config) []shrinker.Transformer /* TODO: return error */ {
 	// -tilde, -short, -last are enabled
 	// -> Process order: tilde, short, last
 	// -amb, -last are enabled
 	// -last just override last element with original value
+	homeDir, err := homedir.Dir()
+	if err != nil {
+		panic(err)
+	}
+
 	transformers := make([]shrinker.Transformer, 0, 4)
 	if config.ReplaceTilde {
 		transformers = append(transformers, &shrinker.ReplaceTildeTransformer{
-			HomeDir: os.Getenv("HOME"), // TODO: go-homedir
+			HomeDir: homeDir,
 		})
 	}
 
@@ -131,7 +137,7 @@ func (c *cli) createTransformers(dirs []string, config *shrinker.Config) []shrin
 	case shrinker.ModeAmbiguous:
 		var startDir string
 		if config.ReplaceTilde {
-			startDir = os.Getenv("HOME") // TODO: go-homedir
+			startDir = homeDir
 		} else {
 			startDir = "/" // TODO: Windows
 		}
