@@ -28,15 +28,15 @@ func (m *MockFileInfo) Name() string {
 }
 
 func (m *MockFileInfo) Size() int64 {
-	panic("implement me")
+	return m.size
 }
 
 func (m *MockFileInfo) Mode() os.FileMode {
-	panic("implement me")
+	return m.mode
 }
 
 func (m *MockFileInfo) ModTime() time.Time {
-	panic("implement me")
+	return m.modTime
 }
 
 func (m *MockFileInfo) IsDir() bool {
