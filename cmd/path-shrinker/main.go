@@ -108,7 +108,10 @@ func main() {
 
 func (c *cli) shrinkPath(path string, config *shrinker.Config) (string, error) {
 	dirs := strings.Split(path, string(os.PathSeparator))
-	transformers := c.createTransformers(dirs, config)
+	transformers, err := c.createTransformers(dirs, config)
+	if err != nil {
+		return "", err
+	}
 	shrink, err := c.executeTransform(transformers, dirs, config)
 	if err != nil {
 		return "", err
@@ -116,14 +119,14 @@ func (c *cli) shrinkPath(path string, config *shrinker.Config) (string, error) {
 	return shrink, nil
 }
 
-func (c *cli) createTransformers(dirs []string, config *shrinker.Config) []shrinker.Transformer /* TODO: return error */ {
+func (c *cli) createTransformers(dirs []string, config *shrinker.Config) ([]shrinker.Transformer, error) {
 	// -tilde, -short, -last are enabled
 	// -> Process order: tilde, short, last
 	// -amb, -last are enabled
 	// -last just override last element with original value
 	homeDir, err := homedir.Dir()
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	transformers := make([]shrinker.Transformer, 0, 4)
@@ -148,7 +151,7 @@ func (c *cli) createTransformers(dirs []string, config *shrinker.Config) []shrin
 	case shrinker.ModeShort:
 		transformers = append(transformers, &shrinker.ShortenTransformer{})
 	default:
-		panic("Unknown mode")
+		return nil, fmt.Errorf("unknown mode: %v", config.Mode)
 	}
 
 	if config.PreserveLast {
@@ -157,7 +160,7 @@ func (c *cli) createTransformers(dirs []string, config *shrinker.Config) []shrin
 		})
 	}
 
-	return transformers
+	return transformers, nil
 }
 
 func (c *cli) executeTransform(transformers []shrinker.Transformer, input []string, config *shrinker.Config) (string, error) {
