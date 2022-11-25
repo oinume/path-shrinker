@@ -2,7 +2,7 @@ package main
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io/ioutil" //nolint:staticcheck
 	"os"
 	"strings"
 	"testing"
