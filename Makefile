@@ -13,6 +13,10 @@ FORMAT_PACKAGES = $(foreach pkg,$(LINT_PACKAGES),$(shell go env GOPATH)/$(pkg))
 .PHONY: all
 all: build
 
+.PHONY: install-tools
+install-tools:
+	@go list -f='{{ join .Imports "\n" }}' ./tools.go | tr -d [ | tr -d ] | xargs -I{} go install {}
+
 .PHONY: bootstrap-lint-tools
 bootstrap-lint-tools:
 	@cd tools && for tool in $(LINT_TOOLS) ; do \
@@ -29,7 +33,8 @@ test:
 	go test -race -v ./
 
 .PHONY: lint
-lint: fmt vet staticcheck errcheck
+lint:
+	docker run --rm -v $(shell pwd):/app -w /app golangci/golangci-lint:v1.49.0 golangci-lint run /app/...
 
 .PHONY: fmt
 fmt:
