@@ -73,7 +73,8 @@ func (at *AmbiguousTransformer) getAmbiguousName(parent, target string) (string,
 			if previousMatched && unicode.ToLower(nameRunes[i]) == unicode.ToLower(targetRunes[i]) {
 				a = append(a, targetRunes[i])
 			} else {
-				previousMatched = false
+				// TODO: maybe a bug
+				previousMatched = false //nolint:ineffassign
 				break
 			}
 		}
