@@ -1,0 +1,9 @@
+coverage:
+  status:
+    project:
+      default:
+        # required coverage value
+        target: 60%
+        # this allows a 80% drop from the previous base commit coverage
+        threshold: 80%
+    patch: off
