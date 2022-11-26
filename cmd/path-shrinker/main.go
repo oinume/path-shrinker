@@ -4,11 +4,12 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
+	"io/ioutil" //nolint:staticcheck
 	"os"
 	"strings"
 
-	"github.com/mitchellh/go-homedir"
+	homedir "github.com/mitchellh/go-homedir"
+
 	shrinker "github.com/oinume/path-shrinker"
 )
 
