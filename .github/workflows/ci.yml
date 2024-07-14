@@ -14,10 +14,10 @@ jobs:
       GOBIN: /home/runner/work/go/bin
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Set up Go
         id: go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5
         with:
           cache: true
           cache-dependency-path: "go.sum"
@@ -26,10 +26,9 @@ jobs:
         run: |
           make build
       - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v3
+        uses: golangci/golangci-lint-action@v6
         with:
-          version: v1.49.0
-#          working-directory: backend
+          version: v1.59.1
           skip-go-installation: true
           skip-pkg-cache: true
           skip-build-cache: true
@@ -38,19 +37,13 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - id: go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5
         with:
           cache: true
           cache-dependency-path: "go.sum"
           go-version-file: "go.mod"
-#      - name: Install tools
-#        run: |
-#          ls -l $GOPATH/bin || true
-#          if [ ! -e $GOPATH/bin/goose ]; then
-#            make install-tools
-#          fi
       - name: Run test
         run: |
           make test GO_TEST="go test -v -race -coverprofile=coverage.txt -covermode=atomic"
