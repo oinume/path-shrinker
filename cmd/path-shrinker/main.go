@@ -4,11 +4,10 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil" //nolint:staticcheck
 	"os"
 	"strings"
 
-	homedir "github.com/mitchellh/go-homedir"
+	"github.com/mitchellh/go-homedir"
 
 	shrinker "github.com/oinume/path-shrinker"
 )
@@ -103,7 +102,7 @@ func main() {
 	os.Exit(newCLI(
 		os.Stdout,
 		os.Stderr,
-		ioutil.ReadDir,
+		os.ReadDir,
 	).run(os.Args))
 }
 

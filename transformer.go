@@ -36,7 +36,7 @@ func (tt *ReplaceTildeTransformer) Transform(input []string) ([]string, error) {
 	return strings.Split(path, string(os.PathSeparator)), nil
 }
 
-type ReadDirFunc func(dirname string) ([]os.FileInfo, error)
+type ReadDirFunc func(dirname string) ([]os.DirEntry, error)
 
 type AmbiguousTransformer struct {
 	StartDir    string

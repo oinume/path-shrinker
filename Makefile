@@ -1,19 +1,9 @@
 NAME = path-shrinker
 GO_TEST ?= go test -v -race -p=1
+GOLANGCI_LINT_VERSION = v1.59.1
 
 .PHONY: all
 all: build
-
-.PHONY: install-tools
-install-tools:
-	@go list -f='{{ join .Imports "\n" }}' ./tools.go | tr -d [ | tr -d ] | xargs -I{} go install {}
-
-.PHONY: bootstrap-lint-tools
-bootstrap-lint-tools:
-	@cd tools && for tool in $(LINT_TOOLS) ; do \
-		echo "Installing/Updating $$tool" ; \
-		GO111MODULE=on GOBIN=$(PWD)/tools/bin go install $$tool; \
-	done
 
 .PHONY: build
 build:
@@ -23,9 +13,16 @@ build:
 test:
 	$(GO_TEST) ./...
 
+lint: ## Run golangci-lint
+	docker run --rm -v ${GOPATH}/pkg/mod:/go/pkg/mod -v $(shell pwd):/app -v $(shell go env GOCACHE):/cache/go -e GOCACHE=/cache/go -e GOLANGCI_LINT_CACHE=/cache/go -w /app golangci/golangci-lint:$(GOLANGCI_LINT_VERSION) golangci-lint run --modules-download-mode=readonly /app/...
 .PHONY: lint
-lint:
-	docker run --rm -v $(shell pwd):/app -w /app golangci/golangci-lint:v1.49.0 golangci-lint run /app/...
+
+lint/fix: ## Run golangci-lint with --fix
+	docker run --rm -v ${GOPATH}/pkg/mod:/go/pkg/mod -v $(shell pwd):/app -v $(shell go env GOCACHE):/cache/go -e GOCACHE=/cache/go -e GOLANGCI_LINT_CACHE=/cache/go -w /app golangci/golangci-lint:$(GOLANGCI_LINT_VERSION) golangci-lint run --fix --modules-download-mode=readonly /app/...
+.PHONY: lint/fix
+
+lint/version: ## Show golangci-lint version
+	@echo $(GOLANGCI_LINT_VERSION)
 
 .PHONY: clean
 clean:
