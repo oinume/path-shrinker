@@ -1,6 +1,7 @@
 package shrinker
 
 import (
+	"io/fs"
 	"os"
 	"reflect"
 	"strings"
@@ -123,10 +124,10 @@ func TestAmbiguousTransformer_Transform(t *testing.T) {
 			input:   strings.Split("/Users/oinume/go/src/github.com", string(os.PathSeparator)),
 			want:    []string{"U", "o", "go", "s", "gith"},
 			wantErr: nil,
-			readDirFunc: func(dirname string) (infos []os.FileInfo, e error) {
-				return []os.FileInfo{
-					shrinker_test.NewMockFileInfo("go2", 0, 0755, time.Now(), true),
-					shrinker_test.NewMockFileInfo("git", 0, 0755, time.Now(), true),
+			readDirFunc: func(dirname string) (infos []os.DirEntry, e error) {
+				return []os.DirEntry{
+					fs.FileInfoToDirEntry(shrinker_test.NewMockFileInfo("go2", 0, 0755, time.Now(), true)),
+					fs.FileInfoToDirEntry(shrinker_test.NewMockFileInfo("git", 0, 0755, time.Now(), true)),
 				}, nil
 			},
 		},
@@ -134,7 +135,7 @@ func TestAmbiguousTransformer_Transform(t *testing.T) {
 			input:   strings.Split("/Users/oinume/go/src/github.com", string(os.PathSeparator)),
 			want:    []string{"U", "o", "g", "s", "g"},
 			wantErr: nil,
-			readDirFunc: func(dirname string) (infos []os.FileInfo, e error) {
+			readDirFunc: func(dirname string) (entries []os.DirEntry, e error) {
 				return nil, nil
 			},
 		},
@@ -177,9 +178,9 @@ func TestAmbiguousTransformer_getAmbiguousName(t *testing.T) {
 		"similar_name_exists": {
 			fields: fields{
 				startDir: "a",
-				readDirFunc: func(dirname string) ([]os.FileInfo, error) {
+				readDirFunc: func(dirname string) ([]os.DirEntry, error) {
 					info := shrinker_test.NewMockFileInfo("Usr", 0, 0755, time.Now(), true)
-					return []os.FileInfo{info}, nil
+					return []os.DirEntry{fs.FileInfoToDirEntry(info)}, nil
 				},
 			},
 			args: args{
@@ -191,9 +192,9 @@ func TestAmbiguousTransformer_getAmbiguousName(t *testing.T) {
 		"no_similar_name": {
 			fields: fields{
 				startDir: "a",
-				readDirFunc: func(dirname string) ([]os.FileInfo, error) {
+				readDirFunc: func(dirname string) ([]os.DirEntry, error) {
 					info := shrinker_test.NewMockFileInfo("Home", 0, 0755, time.Now(), true)
-					return []os.FileInfo{info}, nil
+					return []os.DirEntry{fs.FileInfoToDirEntry(info)}, nil
 				},
 			},
 			args: args{
@@ -205,9 +206,9 @@ func TestAmbiguousTransformer_getAmbiguousName(t *testing.T) {
 		"empty_target": {
 			fields: fields{
 				startDir: "a",
-				readDirFunc: func(dirname string) ([]os.FileInfo, error) {
+				readDirFunc: func(dirname string) ([]os.DirEntry, error) {
 					info := shrinker_test.NewMockFileInfo("Home", 0, 0755, time.Now(), true)
-					return []os.FileInfo{info}, nil
+					return []os.DirEntry{fs.FileInfoToDirEntry(info)}, nil
 				},
 			},
 			args: args{

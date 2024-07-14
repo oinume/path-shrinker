@@ -2,18 +2,17 @@ package main
 
 import (
 	"bytes"
-	"io/ioutil" //nolint:staticcheck
+	"io/fs"
 	"os"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/oinume/path-shrinker/shrinker_test"
-
 	shrinker "github.com/oinume/path-shrinker"
+	"github.com/oinume/path-shrinker/shrinker_test"
 )
 
-func mockReadDir(dirname string) ([]os.FileInfo, error) {
+func mockReadDir(dirname string) ([]os.DirEntry, error) {
 	return nil, nil
 }
 
@@ -55,9 +54,10 @@ func TestCLI_Run_OK(t *testing.T) {
 		"ambiguous": {
 			args:       []string{"main", "/home/oinume/go/src/github.com"},
 			wantOutput: "/h/o/g/s/gith",
-			readDirFunc: func(dirname string) ([]os.FileInfo, error) {
-				ret := []os.FileInfo{
-					shrinker_test.NewMockFileInfo("git", 0, 0755, time.Now(), true),
+			readDirFunc: func(dirname string) ([]os.DirEntry, error) {
+				fileInfo := shrinker_test.NewMockFileInfo("git", 0, 0755, time.Now(), true)
+				ret := []os.DirEntry{
+					fs.FileInfoToDirEntry(fileInfo),
 				}
 				return ret, nil
 			},
@@ -103,7 +103,7 @@ func TestCLI_Run_PrintVersion(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			bout := new(bytes.Buffer)
 			berr := new(bytes.Buffer)
-			c := newCLI(bout, berr, ioutil.ReadDir)
+			c := newCLI(bout, berr, os.ReadDir)
 			exitStatus := c.run(test.args)
 			if got, want := exitStatus, ExitOK; got != want {
 				t.Fatalf("cli.run returns unexpected exit status: got=%v, want=%v", got, want)
@@ -134,7 +134,7 @@ func TestCLI_Run_FlagError(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			bout := new(bytes.Buffer)
 			berr := new(bytes.Buffer)
-			c := newCLI(bout, berr, ioutil.ReadDir)
+			c := newCLI(bout, berr, os.ReadDir)
 			exitStatus := c.run(test.args)
 			if got, want := exitStatus, ExitError; got != want {
 				t.Fatalf("cli.run returns unexpected exit status: got=%v, want=%v", got, want)
